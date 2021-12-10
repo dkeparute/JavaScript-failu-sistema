@@ -6,3 +6,5 @@ data.create();
 data.read();
 data.update();
 data.delete();
+
+data.create('users', 'labas', {name: 'du gaideliai'} );
