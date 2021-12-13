@@ -16,7 +16,7 @@ D - delete (istrinti)
  * Darbiniu funkciju su failu sistema objektas
  */
 const data = {};
-data.baseDir =  path.join(__dirname, '../.data');
+data.baseDir = path.join(__dirname, '../.data');
 
 console.log(data.baseDir);
 /**
@@ -26,9 +26,8 @@ console.log(data.baseDir);
  * @returns{string} absoliutus kelias iki failo
  */
 function fullPath(dir, file) {
-return `${data.baseDir}/${dir}/${file}.json`;
+    return `${data.baseDir}/${dir}/${file}.json`;
 }
-
 /**
  * JSON failo sukurimas .data folder'yje.
  * @param {string} dir sub-folder'is esantis .data folder'yje.
@@ -36,20 +35,35 @@ return `${data.baseDir}/${dir}/${file}.json`;
  * @param {Object} content absoliutus kelias iki failo, pvz. {name: 'Marsietis'}
  * @returns {boolean} pozymis, ar funkcija sekmingai sukure nurodyta faila
  */
-data.create = (dir, fileName, content) => {
+data.create = (dir, fileName, content, callback) => {
     console.log('kuriamas failas');
 
     // open - sukuriame faila ir kartu gauname prieiga prie juo
     // writeFile -irasome turini
     // close - uzbaigiame darba su pasirinktu failu ir atlaisviname priegia prie jo
 
-const absPath = fullPath(dir, fileName);
-console.log(absPath);
+    fs.open(fullPath(dir, fileName), 'wx', (err, fileDescriptor) => {
+        if (err || !fileDescriptor) {
+            return callback(false, 'ivyko klaida bandant sukurti faila ir gauti prieiga prie jo')
+        }
+        const stringContent = JSON.stringify(content);
+        fs.writeFile(fileDescriptor, stringContent, (err) => {
+            if (err) {
+                return callback(false, 'ivyko klaida bandant irasyti turini i faila')
+            }
 
-    return true;
+            fs.close(fileDescriptor, (err) => {
+                if (err) {
+                    callback(false, 'nepavyko uzdaryti/atlaisvinti failo')
+                }
+            })
+            return callback(true, 'failas sekmingai sukurtas ir turinys irasytas');
+        })
+        // atsatyti is sutekstinos versijos 
+        // const recoveredContent = JSON.parse(stringContent);
+        // console.log(recoveredContent);
+    })
 }
-
-
 
 /**
  * JSON failo rodymas .data folder'yje.
